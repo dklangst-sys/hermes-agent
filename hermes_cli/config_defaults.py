@@ -573,6 +573,14 @@ DEFAULT_CONFIG = {
         "command_timeout": 30,  # Timeout for browser commands in seconds (screenshot, navigate, etc.)
         "snapshot_threshold": 15000,  # Max chars before snapshot truncate-and-store (min 1000)
         "record_sessions": False,  # Auto-record browser sessions as WebM videos
+        "browserbase": {
+            # Browserbase API session controls; separate from Hermes WebM recording above.
+            # Note: BROWSERBASE_PROXIES / BROWSERBASE_KEEP_ALIVE env vars were removed in v0.20.2;
+            # these config keys are now the authoritative control surface.
+            "record_session": True,
+            "proxies": True,
+            "keep_alive": True,
+        },
         "headed": False,  # Local mode: launch Chromium with a visible window (also skips per-turn cleanup so the window persists between turns; idle reaper still applies)
         "allow_private_urls": False,  # Allow navigating to private/internal IPs (localhost, 192.168.x.x, etc.)
         # Browser engine for local mode.  Passed as ``--engine <value>`` to

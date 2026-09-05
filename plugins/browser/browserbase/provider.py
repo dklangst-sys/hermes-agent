@@ -14,18 +14,20 @@ Config keys this provider responds to::
 
     browser:
       cloud_provider: "browserbase"
+      browserbase:
+        record_session: true
+        proxies: true
+        keep_alive: true
 
 Auth env vars::
 
     BROWSERBASE_API_KEY=...       # https://browserbase.com
     BROWSERBASE_PROJECT_ID=...
 
-Optional feature knobs::
+Compatibility feature knobs::
 
     BROWSERBASE_BASE_URL=...      # default https://api.browserbase.com
-    BROWSERBASE_PROXIES=true      # default true
     BROWSERBASE_ADVANCED_STEALTH=false
-    BROWSERBASE_KEEP_ALIVE=true   # default true
     BROWSERBASE_SESSION_TIMEOUT=... (seconds, integer, max 21600 = 6h)
 """
 
@@ -40,6 +42,8 @@ import requests
 
 from agent.browser_provider import BrowserProvider
 from agent.secret_scope import get_secret
+from hermes_cli.config import cfg_get, load_config_readonly
+from utils import is_truthy_value
 
 logger = logging.getLogger(__name__)
 
@@ -95,13 +99,39 @@ class BrowserbaseBrowserProvider(BrowserProvider):
     def create_session(self, task_id: str) -> Dict[str, object]:
         config = self._get_config()
 
-        # Optional env-var knobs
-        enable_proxies = os.environ.get("BROWSERBASE_PROXIES", "true").lower() != "false"
+        browserbase_config = load_config_readonly()
+        enable_proxies = is_truthy_value(
+            cfg_get(
+                browserbase_config,
+                "browser",
+                "browserbase",
+                "proxies",
+                default=True,
+            ),
+            default=True,
+        )
         enable_advanced_stealth = (
             os.environ.get("BROWSERBASE_ADVANCED_STEALTH", "false").lower() == "true"
         )
-        enable_keep_alive = (
-            os.environ.get("BROWSERBASE_KEEP_ALIVE", "true").lower() != "false"
+        enable_record_session = is_truthy_value(
+            cfg_get(
+                browserbase_config,
+                "browser",
+                "browserbase",
+                "record_session",
+                default=True,
+            ),
+            default=True,
+        )
+        enable_keep_alive = is_truthy_value(
+            cfg_get(
+                browserbase_config,
+                "browser",
+                "browserbase",
+                "keep_alive",
+                default=True,
+            ),
+            default=True,
         )
         custom_timeout_ms = os.environ.get("BROWSERBASE_SESSION_TIMEOUT")
 
@@ -113,8 +143,14 @@ class BrowserbaseBrowserProvider(BrowserProvider):
             "custom_timeout": False,
         }
 
-        session_config: Dict[str, object] = {"projectId": config["project_id"]}
+        browser_settings: Dict[str, bool] = {"recordSession": enable_record_session}
+        if enable_advanced_stealth:
+            browser_settings["advancedStealth"] = True
 
+        session_config: Dict[str, object] = {
+            "projectId": config["project_id"],
+            "browserSettings": browser_settings,
+        }
         if enable_keep_alive:
             session_config["keepAlive"] = True
 
@@ -130,9 +166,6 @@ class BrowserbaseBrowserProvider(BrowserProvider):
 
         if enable_proxies:
             session_config["proxies"] = True
-
-        if enable_advanced_stealth:
-            session_config["browserSettings"] = {"advancedStealth": True}
 
         # --- Create session via API ---
         headers = {

@@ -352,14 +352,8 @@ google-chrome \
 ### 可选环境变量
 
 ```bash
-# Residential proxies for better CAPTCHA solving (default: "true")
-BROWSERBASE_PROXIES=true
-
 # Advanced stealth with custom Chromium — requires Scale Plan (default: "false")
 BROWSERBASE_ADVANCED_STEALTH=false
-
-# Session reconnection after disconnects — requires paid plan (default: "true")
-BROWSERBASE_KEEP_ALIVE=true
 
 # Custom session timeout in milliseconds (default: project default)
 # Examples: 600000 (10min), 1800000 (30min)
@@ -375,6 +369,11 @@ BROWSER_INACTIVITY_TIMEOUT=120
 # Hermes doesn't add automatically; setting it disables the auto-injection.
 AGENT_BROWSER_ARGS=--no-sandbox
 ```
+
+注意：Browserbase 提供方的会话控制项（`record_session`、`proxies`、`keep_alive`）
+现在配置在 `config.yaml` 的 `browser.browserbase.*` 下，提供方通过
+`load_config_readonly` 读取它们。旧的 `BROWSERBASE_PROXIES` 和
+`BROWSERBASE_KEEP_ALIVE` 环境变量已不再生效。
 
 ### 安装 agent-browser CLI
 

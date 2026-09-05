@@ -28,13 +28,15 @@ Environment Variables:
 - BROWSERBASE_API_KEY: API key for direct Browserbase cloud mode
 - BROWSERBASE_PROJECT_ID: Project ID for direct Browserbase cloud mode
 - BROWSER_USE_API_KEY: API key for direct Browser Use cloud mode
-- BROWSERBASE_PROXIES: Enable/disable residential proxies (default: "true")
 - BROWSERBASE_ADVANCED_STEALTH: Enable advanced stealth mode with custom Chromium,
   requires Scale Plan (default: "false")
-- BROWSERBASE_KEEP_ALIVE: Enable keepAlive for session reconnection after disconnects,
-  requires paid plan (default: "true")
 - BROWSERBASE_SESSION_TIMEOUT: Custom session timeout in seconds (max 21600 = 6h).
   Set to extend beyond project default. Common values: 600 (10min), 1800 (30min) (default: none)
+
+Note: Browserbase provider session controls (record_session, proxies, keep_alive)
+live in ``config.yaml`` under ``browser.browserbase.*``; the provider reads them
+via ``load_config_readonly``. The legacy ``BROWSERBASE_PROXIES`` and
+``BROWSERBASE_KEEP_ALIVE`` env vars are no longer read.
 
 Usage:
     from tools.browser_tool import browser_navigate, browser_snapshot, browser_click

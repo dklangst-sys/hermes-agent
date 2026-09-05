@@ -55,15 +55,9 @@ Browser Use Cloud runs managed Chromium with [stealth](https://docs.browser-use.
 
 ### Browserbase cloud mode
 
-To use Browserbase-managed cloud browsers, add:
+To use Browserbase-managed cloud browsers, store your Browserbase API credentials in `~/.hermes/.env` and select Browserbase as your browser provider. Obtain the credentials from [browserbase.com](https://browserbase.com).
 
-```bash
-# Add to ~/.hermes/.env
-BROWSERBASE_API_KEY=***
-BROWSERBASE_PROJECT_ID=your-project-id-here
-```
-
-Get your credentials at [browserbase.com](https://browserbase.com).
+For Browserbase's managed configuration, `.env` is only for credentials: configure provider recording, proxies, and keep-alive in `config.yaml`. Legacy advanced-stealth and session-timeout environment compatibility knobs remain supported.
 
 :::note Selecting the provider
 The `.env` keys above supply **credentials only**. The active cloud browser is chosen by the `browser.cloud_provider` selection written by `hermes tools` → Browser Automation (`browserbase`, `browser-use`, `camofox`, or `nous` for the Nous Subscription). Once a selection exists, adding or removing a key does not switch providers — and a selected provider with a missing key errors with guidance to run `hermes tools` instead of silently rerouting. Never-configured setups still autodetect from available credentials.
@@ -506,17 +500,13 @@ See the MCP guide for the practical setup:
 
 If you do **not** set any cloud credentials and don't use `/browser connect`, Hermes can still use the browser tools through a local Chromium install driven by `agent-browser`.
 
-### Optional Environment Variables
+### Other Browser Environment Variables
+
+The Browserbase advanced-stealth and session-timeout compatibility knobs below continue to work; use `config.yaml` for Browserbase provider session controls.
 
 ```bash
-# Residential proxies for better CAPTCHA solving (default: "true")
-BROWSERBASE_PROXIES=true
-
 # Advanced stealth with custom Chromium — requires Scale Plan (default: "false")
 BROWSERBASE_ADVANCED_STEALTH=false
-
-# Session reconnection after disconnects — requires paid plan (default: "true")
-BROWSERBASE_KEEP_ALIVE=true
 
 # Custom session timeout in seconds (max 21600 = 6 hours) (default: project default)
 # Examples: 600 (10min), 1800 (30min), 21600 (6h max)
@@ -764,6 +754,8 @@ Agent workflow:
 
 ## Session Recording
 
+### Hermes WebM recordings
+
 Automatically record browser sessions as WebM video files:
 
 ```yaml
@@ -771,7 +763,21 @@ browser:
   record_sessions: true  # default: false
 ```
 
-When enabled, recording starts automatically on the first `browser_navigate` and saves to `~/.hermes/browser_recordings/` when the session closes. Works in both local and cloud (Browserbase) modes. Recordings older than 72 hours are automatically cleaned up.
+When enabled, Hermes starts recording on the first `browser_navigate` and saves to `~/.hermes/browser_recordings/` when the session closes. Recordings older than 72 hours are automatically cleaned up. This controls Hermes's own WebM capture; it does **not** configure Browserbase's provider-side session recording.
+
+### Browserbase provider session controls
+
+When `browser.cloud_provider: browserbase` is selected, configure Browserbase's provider-side API session fields in `config.yaml`:
+
+```yaml
+browser:
+  browserbase:
+    record_session: false  # default: true
+    proxies: false         # default: true
+    keep_alive: false      # default: true
+```
+
+`browser.browserbase.record_session` controls Browserbase's provider recording, independent of `browser.record_sessions`, which controls Hermes's local WebM capture. `proxies` and `keep_alive` control their respective Browserbase request fields; setting either to `false` omits it from the provider's session request. These are behavioral settings in `config.yaml`; keep `.env` limited to credentials.
 
 ## Headed Mode (Visible Browser Window)
 

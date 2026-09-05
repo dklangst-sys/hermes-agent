@@ -432,6 +432,15 @@ class TestRecordSessionsConfig:
         assert "record_sessions" in browser_cfg
         assert browser_cfg["record_sessions"] is False
 
+    def test_default_config_enables_browserbase_provider_session_controls(self):
+        from hermes_cli.config import DEFAULT_CONFIG
+
+        browserbase_cfg = DEFAULT_CONFIG["browser"]["browserbase"]
+        assert browserbase_cfg == {
+            "record_session": True,
+            "proxies": True,
+            "keep_alive": True,
+        }
 
     def test_maybe_stop_recording_noop_when_not_recording(self):
         """Stopping when not recording is a no-op."""
